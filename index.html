@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Age Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div class="wrapper">
+  <header>
+    <p class="header-label">Date of Birth</p>
+    <h1>Age <span>Calculator</span></h1>
+    <p class="header-sub">Find out exactly how old you are — to the day.</p>
+  </header>
+
+  <div class="card">
+    <p class="today-line" id="todayLine"></p>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Day</label>
+        <input type="number" id="day" placeholder="DD" min="1" max="31"/>
+      </div>
+      <div class="field">
+        <label>Month</label>
+        <input type="number" id="month" placeholder="MM" min="1" max="12"/>
+      </div>
+      <div class="field">
+        <label>Year</label>
+        <input type="number" id="year" placeholder="YYYY" min="1"/>
+      </div>
+    </div>
+
+    <p class="error-msg" id="errorMsg"></p>
+
+    <button class="btn" id="calcBtn" onclick="calculate()">Calculate Age</button>
+
+    <div class="divider" id="divider">
+      <span class="divider-line"></span>
+      <span class="divider-label">Your Age</span>
+      <span class="divider-line"></span>
+    </div>
+
+    <div class="result" id="result">
+      <div class="stat">
+        <span class="stat-num" id="resYears">—</span>
+        <span class="stat-label">Years</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num" id="resMonths">—</span>
+        <span class="stat-label">Months</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num" id="resDays">—</span>
+        <span class="stat-label">Days</span>
+      </div>
+    </div>
+
+    <div class="extra" id="extra"></div>
+
+    <div class="reset-row" id="resetRow">
+      <button class="reset-btn" onclick="reset()">↺ Reset</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
