@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Age Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0e0f13;
+      --surface:   #16181f;
+      --border:    #2a2d38;
+      --accent:    #c8a96e;
+      --accent2:   #e8c98a;
+      --text:      #e8e4da;
+      --muted:     #6b6d78;
+      --error:     #e07070;
+      --glow:      rgba(200,169,110,0.18);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* Subtle grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      opacity: 0.25;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: -40%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(ellipse, rgba(200,169,110,0.07) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .header-label {
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    header h1 span {
+      color: var(--accent);
+    }
+    .header-sub {
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 44px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 0 60px rgba(0,0,0,0.5), 0 0 120px var(--glow);
+    }
+
+    /* Field group */
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .field label {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .field input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-family: 'DM Mono', monospace;
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+      appearance: none;
+      -moz-appearance: textfield;
+    }
+    .field input::-webkit-inner-spin-button,
+    .field input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .field input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(200,169,110,0.12);
+    }
+    .field input.invalid {
+      border-color: var(--error);
+      box-shadow: 0 0 0 3px rgba(224,112,112,0.12);
+    }
+    .field input::placeholder { color: var(--muted); }
+
+    /* Error message */
+    .error-msg {
+      min-height: 20px;
+      font-size: 11px;
+      color: var(--error);
+      letter-spacing: 0.04em;
+      margin-bottom: 22px;
+      text-align: center;
+      transition: opacity 0.2s;
+    }
+    .error-msg:empty { opacity: 0; }
+
+    /* Button */
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: #0e0f13;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(200,169,110,0.25);
+    }
+    .btn:hover {
+      background: var(--accent2);
+      box-shadow: 0 6px 28px rgba(200,169,110,0.4);
+    }
+    .btn:active { transform: scale(0.98); }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 30px 0;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .divider.visible { opacity: 1; }
+    .divider-line { flex: 1; height: 1px; background: var(--border); }
+    .divider-label {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* Result */
+    .result {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .result.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .stat {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 14px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      transform: scaleX(0);
+      transition: transform 0.6s ease;
+    }
+    .result.visible .stat::before { transform: scaleX(1); }
+
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+      display: block;
+      margin-bottom: 8px;
+      transition: transform 0.3s;
+    }
+    .stat:hover .stat-num { transform: scale(1.06); }
+    .stat-label {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* Extra info */
+    .extra {
+      margin-top: 20px;
+      padding: 16px 18px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      opacity: 0;
+      transition: opacity 0.5s ease 0.2s;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+    .extra.visible { opacity: 1; }
+    .extra span { color: var(--accent2); }
+
+    /* Today's date display */
+    .today-line {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 28px;
+      letter-spacing: 0.05em;
+    }
+    .today-line strong { color: var(--text); }
+
+    /* Reset link */
+    .reset-row {
+      text-align: center;
+      margin-top: 22px;
+      opacity: 0;
+      transition: opacity 0.4s 0.3s;
+    }
+    .reset-row.visible { opacity: 1; }
+    .reset-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-bottom: 1px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .reset-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+    @media (max-width: 480px) {
+      .card { padding: 28px 20px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <header>
+    <p class="header-label">Date of Birth</p>
+    <h1>Age <span>Calculator</span></h1>
+    <p class="header-sub">Find out exactly how old you are — to the day.</p>
+  </header>
+
+  <div class="card">
+    <p class="today-line" id="todayLine"></p>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Day</label>
+        <input type="number" id="day" placeholder="DD" min="1" max="31"/>
+      </div>
+      <div class="field">
+        <label>Month</label>
+        <input type="number" id="month" placeholder="MM" min="1" max="12"/>
+      </div>
+      <div class="field">
+        <label>Year</label>
+        <input type="number" id="year" placeholder="YYYY" min="1"/>
+      </div>
+    </div>
+
+    <p class="error-msg" id="errorMsg"></p>
+
+    <button class="btn" id="calcBtn" onclick="calculate()">Calculate Age</button>
+
+    <div class="divider" id="divider">
+      <span class="divider-line"></span>
+      <span class="divider-label">Your Age</span>
+      <span class="divider-line"></span>
+    </div>
+
+    <div class="result" id="result">
+      <div class="stat">
+        <span class="stat-num" id="resYears">—</span>
+        <span class="stat-label">Years</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num" id="resMonths">—</span>
+        <span class="stat-label">Months</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num" id="resDays">—</span>
+        <span class="stat-label">Days</span>
+      </div>
+    </div>
+
+    <div class="extra" id="extra"></div>
+
+    <div class="reset-row" id="resetRow">
+      <button class="reset-btn" onclick="reset()">↺ Reset</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Show today's date
+  const todayLine = document.getElementById('todayLine');
+  const now = new Date();
+  const months = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
+  todayLine.innerHTML = `Today is <strong>${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}</strong>`;
+
+  // Animate number counter
+  function animateNumber(el, target, duration = 600) {
+    const start = parseInt(el.textContent) || 0;
+    if (start === target) { el.textContent = target; return; }
+    const step = (timestamp) => {
+      if (!step.startTime) step.startTime = timestamp;
+      const progress = Math.min((timestamp - step.startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(start + (target - start) * eased);
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  // Days in month
+  function daysInMonth(m, y) {
+    return new Date(y, m, 0).getDate();
+  }
+
+  function setError(msg) {
+    const errEl = document.getElementById('errorMsg');
+    errEl.textContent = msg;
+  }
+
+  function clearError() { setError(''); }
+
+  function markInvalid(ids) {
+    ['day','month','year'].forEach(id => {
+      document.getElementById(id).classList.toggle('invalid', ids.includes(id));
+    });
+  }
+
+  function calculate() {
+    clearError();
+    markInvalid([]);
+
+    const dayVal   = document.getElementById('day').value.trim();
+    const monthVal = document.getElementById('month').value.trim();
+    const yearVal  = document.getElementById('year').value.trim();
+
+    // Presence check
+    if (!dayVal || !monthVal || !yearVal) {
+      const missing = [];
+      if (!dayVal)   missing.push('day');
+      if (!monthVal) missing.push('month');
+      if (!yearVal)  missing.push('year');
+      markInvalid(missing);
+      setError('Please fill in all fields.');
+      return;
+    }
+
+    const d = parseInt(dayVal, 10);
+    const m = parseInt(monthVal, 10);
+    const y = parseInt(yearVal, 10);
+
+    // Range checks
+    if (m < 1 || m > 12) {
+      markInvalid(['month']);
+      setError('Month must be between 1 and 12.');
+      return;
+    }
+    const maxDays = daysInMonth(m, y);
+    if (d < 1 || d > maxDays) {
+      markInvalid(['day']);
+      setError(`Day must be between 1 and ${maxDays} for that month.`);
+      return;
+    }
+    if (y < 1 || y > now.getFullYear()) {
+      markInvalid(['year']);
+      setError(`Year must be between 1 and ${now.getFullYear()}.`);
+      return;
+    }
+
+    const dob = new Date(y, m - 1, d);
+    if (dob > now) {
+      markInvalid(['day','month','year']);
+      setError('Date of birth cannot be in the future.');
+      return;
+    }
+
+    // ─── Age Calculation ───────────────────────────────────────
+    let years  = now.getFullYear() - dob.getFullYear();
+    let months2 = now.getMonth()   - dob.getMonth();
+    let days2  = now.getDate()     - dob.getDate();
+
+    if (days2 < 0) {
+      months2--;
+      days2 += daysInMonth(now.getMonth(), now.getFullYear()); // borrow from current month
+    }
+    if (months2 < 0) {
+      years--;
+      months2 += 12;
+    }
+
+    // Extra stats
+    const totalDays   = Math.floor((now - dob) / 86400000);
+    const totalWeeks  = Math.floor(totalDays / 7);
+    const totalMonths = years * 12 + months2;
+    const nextBday    = new Date(now.getFullYear(), m - 1, d);
+    if (nextBday <= now) nextBday.setFullYear(nextBday.getFullYear() + 1);
+    const daysToNext  = Math.ceil((nextBday - now) / 86400000);
+
+    // ─── Show result ───────────────────────────────────────────
+    const resEl   = document.getElementById('result');
+    const divEl   = document.getElementById('divider');
+    const extraEl = document.getElementById('extra');
+    const resetEl = document.getElementById('resetRow');
+
+    divEl.classList.add('visible');
+    resEl.classList.add('visible');
+    extraEl.classList.add('visible');
+    resetEl.classList.add('visible');
+
+    animateNumber(document.getElementById('resYears'),  years);
+    animateNumber(document.getElementById('resMonths'), months2);
+    animateNumber(document.getElementById('resDays'),   days2);
+
+    extraEl.innerHTML =
+      `<span>${totalDays.toLocaleString()}</span> total days &nbsp;·&nbsp; ` +
+      `<span>${totalWeeks.toLocaleString()}</span> weeks &nbsp;·&nbsp; ` +
+      `<span>${totalMonths.toLocaleString()}</span> total months<br>` +
+      `Next birthday in <span>${daysToNext}</span> day${daysToNext !== 1 ? 's' : ''}`;
+  }
+
+  function reset() {
+    ['day','month','year'].forEach(id => {
+      document.getElementById(id).value = '';
+      document.getElementById(id).classList.remove('invalid');
+    });
+    clearError();
+    document.getElementById('result').classList.remove('visible');
+    document.getElementById('divider').classList.remove('visible');
+    document.getElementById('extra').classList.remove('visible');
+    document.getElementById('resetRow').classList.remove('visible');
+    document.getElementById('resYears').textContent  = '—';
+    document.getElementById('resMonths').textContent = '—';
+    document.getElementById('resDays').textContent   = '—';
+    document.getElementById('extra').innerHTML = '';
+    document.getElementById('day').focus();
+  }
+
+  // Allow Enter key to trigger calculate
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') calculate();
+  });
+
+  // Auto-focus Day on load
+  document.getElementById('day').focus();
+</script>
+</body>
+</html>
