@@ -1,4 +1,4 @@
-# 🎂 Age Calculator
+# 🎂  Smart Age Calculator
 
 A modern and fully functional **Age Calculator Web App** built using **HTML, CSS, and JavaScript**.  
 Users can enter their birth date and instantly calculate their exact age in **Years, Months, and Days**.
