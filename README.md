@@ -41,11 +41,7 @@ Users can enter their birth date and instantly calculate their exact age in **Ye
 1. Download or clone repository
 2. Open `index.html` in browser
 
-## 📸 Screenshot
-(Add screenshot here)
-
 ## 👨‍💻 Author
 Heer D Lad
 
-## 📌 Internship Project
-Submitted for CodeAlpha Internship
+
